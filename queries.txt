@@ -1,0 +1,2 @@
+Get tweet by user
+select t.TWEET_TEXT, u.SCREEN_NAME from Tweet t join TwitterUser u on t.USER_ID=u.ID where u.SCREEN_NAME='crashtxt';
