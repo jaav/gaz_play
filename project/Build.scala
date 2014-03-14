@@ -4,11 +4,11 @@ import play.Project._
 
 object ApplicationBuild extends Build {
 
-  val appName         = "tick5"
-  val appVersion      = "1.0-SNAPSHOT"
+  val appName         = "ga-z"
+  val appVersion      = "0.9"
 
   val appDependencies = Seq(
-    "play-aws"      % "play-aws_2.10"      % "0.1",
+    "com.amazonaws" % "aws-java-sdk" % "1.5.0",
     javaCore,
     javaJdbc,
     javaEbean

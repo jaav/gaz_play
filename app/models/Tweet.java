@@ -1,8 +1,8 @@
 package models;
 
+import aws.DynamoFactory;
 import com.amazonaws.services.dynamodbv2.datamodeling.*;
-import play.modules.aws.dynamodb.DynamoDB;
-import play.modules.aws.dynamodb.DynamoDBModel;
+import aws.DynamoDBModel;
 
 import java.util.List;
 import java.util.Set;
@@ -130,7 +130,7 @@ public class Tweet extends DynamoDBModel implements Comparable<Tweet> {
 	}
 
 	public static boolean exists(String email) {
-		Tweet tweet = DynamoDB.mapper().load(Tweet.class, email);
+		Tweet tweet = DynamoFactory.getMapper().load(Tweet.class, email);
 		return tweet != null;
 	}
 
