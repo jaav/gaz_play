@@ -6,11 +6,14 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression;
 import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedScanList;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
+import com.amazonaws.services.dynamodbv2.model.ComparisonOperator;
+import com.amazonaws.services.dynamodbv2.model.Condition;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import models.GswSocial;
 import models.Sponsor;
 import models.Tweet;
 import play.*;
@@ -48,6 +51,30 @@ public class Application extends Controller {
 		}
 	}
 
+	@BodyParser.Of(BodyParser.Json.class)
+	public static Result storeGswSocial() {
+
+		JsonNode json = request().body().asJson();
+		if (json == null) {
+			return badRequest("Expecting Json data");
+		} else {
+			GswSocial gswSocial = new GswSocial();
+			gswSocial.setId(System.currentTimeMillis());
+			gswSocial.setEmail(json.findPath("email").textValue());
+			gswSocial.setLanguage(json.findPath("language").textValue());
+			gswSocial.setComment(json.findPath("comment").textValue());
+			dynamoMapper = DynamoFactory.getMapper();
+			dynamoMapper.save(gswSocial);
+
+			ObjectMapper mapper = new ObjectMapper();
+			ObjectNode result = Json.newObject();
+			JsonNode object = mapper.valueToTree(gswSocial);
+			result.put("status", "OK");
+			result.put("object", object);
+			return ok(result);
+		}
+	}
+
 
 	/*public static List<Tweet> getTweets() {
 		DynamoDBMapper dynamoMapper = DynamoFactory.getMapper();
@@ -78,13 +105,17 @@ public class Application extends Controller {
 		}
 		else
 			sorted.addAll(tweets);
-		addPromoTweets(sorted);
+		//addPromoTweets(sorted);
 		return sorted;
 	}
 
 	private static void addPromoTweets(List<Tweet> tweets) {
 		for (int i = 0; i < (6 - tweets.size()); i++) {
 			DynamoDBScanExpression scanExpression = new DynamoDBScanExpression();
+			scanExpression.addFilterCondition("target",
+			                new Condition()
+			                   .withComparisonOperator(ComparisonOperator.EQ)
+			                   .withAttributeValueList(new AttributeValue().withS("gazet")));
 			List<Sponsor> scanResult = dynamoMapper.scan(Sponsor.class, scanExpression);
 			int randomCounter = (int)Math.floor(Math.random()*scanResult.size());
 			Sponsor sponsor = scanResult.get(randomCounter);
@@ -105,6 +136,7 @@ public class Application extends Controller {
 		DynamoDBScanExpression dynamoDBScanExpression = new DynamoDBScanExpression();
 		PaginatedScanList<Tweet> psl = dynamoMapper.scan(Tweet.class, dynamoDBScanExpression);
 		Tweet[] tweets = psl.toArray(new Tweet[0]);
+		Logger.warn("Recent tweets length = "+tweets.length);
 		Arrays.sort(tweets, new Comparator<Tweet>() {
 			@Override
 			public int compare(Tweet t1, Tweet t2) {

@@ -9,24 +9,34 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
 
 import java.util.Set;
 
-@DynamoDBTable(tableName = "sponsor")
+@DynamoDBTable(tableName = "tick_message")
 public class Sponsor extends DynamoDBModel implements Comparable<Sponsor> {
 
-	private String id;
+	private Long id;
 	private String name;
 	private String tweet;
 	private String tweep;
 	private String url;
+	private String target;
 
 	@DynamoDBHashKey(attributeName = "id")
-	public String getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(String id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 
+
+	@DynamoDBRangeKey(attributeName = "target")
+	public String getTarget() {
+		return target;
+	}
+
+	public void setTarget(String target) {
+		this.target = target;
+	}
 
 	@DynamoDBAttribute(attributeName = "name")
 	public String getName() {
@@ -69,7 +79,7 @@ public class Sponsor extends DynamoDBModel implements Comparable<Sponsor> {
 
 	public int compareTo(Sponsor sponsor) {
 		if (this.id != null && sponsor.getId() != null) {
-			return this.id.compareToIgnoreCase(sponsor.getId());
+			return (int)(this.id - sponsor.getId());
 		}
 		return 0;
 	}
